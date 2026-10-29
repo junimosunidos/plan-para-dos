@@ -613,12 +613,25 @@ function saveNames() { try { sessionStorage.setItem('plan2.names', JSON.stringif
 function loadNames() { try { const v = JSON.parse(sessionStorage.getItem('plan2.names')); if (Array.isArray(v) && v.length === 2 && v.every(x => typeof x === 'string' && x.trim())) return v; } catch (e) {} return null; }
 
 let lastView = null;
-let inGame = false;
+/* Botón Atrás del móvil: hace lo mismo que la flecha de la app.
+   En la web se deja una entrada de historial mientras se está en un juego; Chrome ignora las
+   que se crean sin un toque reciente, así que solo se crea justo después de que el usuario toque. */
+let trapped = false, ignorePop = false;
+const inGameView = () => !['home', 'setup'].includes(S.view);
+function syncTrap() {
+  if (inGameView() && !trapped && (navigator.userActivation ? navigator.userActivation.isActive : true)) {
+    history.pushState({ game: true }, ''); trapped = true;
+  } else if (!inGameView() && trapped) {
+    trapped = false; ignorePop = true; history.back();
+  }
+}
+function goBack() {
+  if (inGameView()) { go(S.names ? 'home' : 'setup'); return true; }
+  return false;
+}
 function go(view) {
-  const game = !['home', 'setup'].includes(view);
-  if (game && !inGame) { history.pushState({ game: true }, ''); inGame = true; }
-  if (!game && inGame) { inGame = false; history.back(); }
-  S.view = view; S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0); }
+  S.view = view;
+  syncTrap(); S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0); }
 function render() {
   app.innerHTML = VIEWS[S.view]();
   if (S.view !== lastView) { app.firstElementChild?.classList.add('enter'); lastView = S.view; }
@@ -977,10 +990,18 @@ app.addEventListener('click', e => {
 });
 
 window.addEventListener('popstate', () => {
-  if (!inGame) return;
-  inGame = false;
-  S.view = 'home'; S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0);
+  if (ignorePop) { ignorePop = false; return; }
+  trapped = false;
+  goBack();
 });
+document.addEventListener('click', syncTrap);
+// En el APK, el botón Atrás de Android lo gestiona el plugin App de Capacitor
+(() => {
+  const cap = window.Capacitor;
+  const App = cap && ((cap.Plugins && cap.Plugins.App) || (cap.registerPlugin && cap.registerPlugin('App')));
+  if (!App || !cap.isNativePlatform || !cap.isNativePlatform()) return;
+  App.addListener('backButton', () => { if (!goBack()) App.exitApp(); });
+})();
 matchMedia('(orientation: portrait)').addEventListener?.('change', () => { if (S.view === 'peaje') render(); });
 
 /* ---------- boot ---------- */
