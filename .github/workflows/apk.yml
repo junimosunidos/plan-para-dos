@@ -24,6 +24,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Poner el número de versión
+        run: sed -i "s/__VERSION__/${GITHUB_SHA::7}/g" www/index.html
+
       - name: Instalar dependencias
         run: npm ci
 

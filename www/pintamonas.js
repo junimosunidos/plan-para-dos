@@ -10,6 +10,8 @@ const PM = (() => {
     appId: '1:505609647203:web:23be59597b40028d97b456',
   };
   const WEB_URL = 'https://junimosunidos.github.io/plan-para-dos/';
+  // Súbelo cuando cambie cómo se guarda la partida: los móviles con otra versión no podrán unirse
+  const PROTOCOL = 2;
   const CHARACTERS = [
     'Mickey Mouse', 'Minnie Mouse', 'Pato Donald', 'Goofy', 'Bugs Bunny', 'Pato Lucas', 'Piolín', 'Silvestre', 'Correcaminos', 'Coyote',
     'Pantera Rosa', 'Scooby-Doo', 'Pedro Picapiedra', 'Popeye', 'Pájaro Loco', 'Tom', 'Jerry', 'Garfield', 'Snoopy', 'Pitufo',
@@ -95,6 +97,7 @@ const PM = (() => {
     for (let tries = 0; tries < 5; tries++) {
       const code = newCode();
       const room = {
+        v: PROTOCOL,
         host: P.uid,
         names: { host: S.names[P.me], guest: S.names[1 - P.me] },
         settings: { time: P.time, rounds: P.rounds },
@@ -119,6 +122,7 @@ const PM = (() => {
       const snap = await db.ref('rooms/' + code).get();
       const room = snap.val();
       if (!room) return fail(`No hay ninguna partida con el código ${code}. Revisa que esté bien escrito.`);
+      if (room.v !== PROTOCOL) return fail('Esta partida se ha creado con otra versión de la app. Actualizad los dos móviles a la última versión (instalar el APK nuevo o recargar la web) y cread la partida otra vez.');
       if (room.host === P.uid) return enter(code, 'host');
       const res = await db.ref(`rooms/${code}/guest`).transaction(cur => (cur && cur !== P.uid ? undefined : P.uid));
       if (!res.committed) return fail('Esta partida ya tiene dos jugadores.');
