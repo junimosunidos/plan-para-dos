@@ -630,6 +630,7 @@ function goBack() {
   return false;
 }
 function go(view) {
+  if (S.view === 'pm' && view !== 'pm') PM.leave();
   S.view = view;
   syncTrap(); S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0); }
 function render() {
@@ -702,8 +703,8 @@ const VIEWS = {
           <div class="game-body">
             <h3>Pintamonas</h3>
             <p>Os sale el mismo personaje y lo dibujáis a la vez, cada uno en su móvil. Votáis el mejor y el que pierde bebe.</p>
-            <div class="meta"><span class="pill">Dos móviles</span><span class="pill">Necesita internet</span>${PM.live ? '<span class="pill live">Partida en curso</span>' : ''}</div>
-            <span class="play">${PM.live ? 'Continuar' : 'Jugar'} →</span>
+            <div class="meta"><span class="pill">Dos móviles</span><span class="pill">Necesita internet</span></div>
+            <span class="play">Jugar →</span>
           </div>
           <div class="art art-pm" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
         </button>

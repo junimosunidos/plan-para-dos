@@ -75,10 +75,16 @@ const PM = (() => {
     const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     return Array.from({ length: 4 }, () => abc[Math.floor(Math.random() * abc.length)]).join('');
   }
+  // Personaje al azar de toda la lista; solo se evita repetir el que acaba de salir
+  function randomChar(prev) {
+    let i;
+    do { i = Math.floor(Math.random() * CHARACTERS.length); } while (i === prev);
+    return i;
+  }
   function freshState(game) {
     return {
       phase: 'lobby', game, round: 1,
-      deck: shuffle(CHARACTERS.map((_, i) => i)), pos: 0,
+      char: randomChar(), pos: 0,
       scores: { host: 0, guest: 0 },
     };
   }
@@ -130,7 +136,7 @@ const PM = (() => {
     roomRef = db.ref('rooms/' + code);
     roomRef.on('value', snap => {
       P.room = snap.val();
-      if (!P.room) { leaveRoom(); return fail('La partida ha terminado.'); }
+      if (!P.room) { leaveRoom(); return fail('La otra persona ha salido de la partida.'); }
       onRoom();
     });
     go('pm');
@@ -190,7 +196,7 @@ const PM = (() => {
     const s = st(), pos = s.pos;
     tx(x => {
       if (x.phase !== 'reveal' || x.pos !== pos) return x;
-      x.pos = (x.pos + 1) % x.deck.length;
+      x.pos += 1; x.char = randomChar(x.char);
       x.ready = null;
       return x;
     });
@@ -224,7 +230,7 @@ const PM = (() => {
         else x.final = { winner: h > g ? 'host' : 'guest', loser: h > g ? 'guest' : 'host', tie: false };
         x.phase = 'final';
       } else {
-        x.round += 1; x.pos = (x.pos + 1) % x.deck.length;
+        x.round += 1; x.pos += 1; x.char = randomChar(x.char);
         x.phase = 'reveal'; x.votes = null; x.result = null; x.ready = null;
       }
       return x;
@@ -235,17 +241,19 @@ const PM = (() => {
     tx(x => {
       if (x.phase !== 'final' || x.game !== game) return x;
       const n = freshState(game + 1);
-      n.deck = x.deck; n.pos = (x.pos + 1) % x.deck.length; n.phase = 'reveal';
+      n.pos = x.pos + 1; n.phase = 'reveal';
       return n;
     });
     db.ref(`rooms/${P.code}/drawings`).remove().catch(() => {});
   }
-  function finish() {
-    const host = P.role === 'host', ref = roomRef;
+  // Salir de la partida la borra para los dos: al volver se empieza creando una nueva
+  function leave() {
+    const ref = roomRef;
     leaveRoom();
-    if (host && ref) ref.remove().catch(() => {});
-    P.view = 'menu'; go('pm');
+    if (ref) ref.remove().catch(() => {});
+    P.view = 'menu'; P.error = '';
   }
+  function finish() { leave(); go('pm'); }
 
   // Ruleta: la mitad del anfitrión va de 0° a 180° y la del invitado de 180° a 360°, con el puntero arriba
   function spinTo(loser) {
@@ -350,7 +358,7 @@ const PM = (() => {
       return `<main class="screen">${head}${scoreBar(s)}
         <div class="pm-center">
           <p class="eyebrow">Tenéis que dibujar a</p>
-          <h3 class="pm-char neon">${esc(CHARACTERS[s.deck[s.pos]])}</h3>
+          <h3 class="pm-char neon">${esc(CHARACTERS[s.char])}</h3>
           <p class="note">${P.room.settings.time} segundos. La cuenta atrás empieza cuando los dos estéis listos.</p>
         </div>
         <div class="stack">
@@ -361,7 +369,7 @@ const PM = (() => {
     if (s.phase === 'draw') {
       const left = Math.min(P.room.settings.time, Math.max(0, Math.ceil((s.endsAt - now()) / 1000)));
       return `<main class="screen pm-draw">${head}
-        <div class="pm-drawhead"><span class="pm-what">${esc(CHARACTERS[s.deck[s.pos]])}</span><span class="pm-timer ${left <= 10 ? 'hurry' : ''}" id="pm-timer">${left}</span></div>
+        <div class="pm-drawhead"><span class="pm-what">${esc(CHARACTERS[s.char])}</span><span class="pm-timer ${left <= 10 ? 'hurry' : ''}" id="pm-timer">${left}</span></div>
         <div class="pm-canvas-box" id="pm-canvas-box"></div>
         <div class="pm-tools">
           <div class="pm-colors">${COLORS.map(c => `<button class="pm-color ${!pad.eraser && pad.color === c ? 'on' : ''}" style="--c:${c}" data-act="pm-color" data-v="${c}" aria-label="Color"></button>`).join('')}</div>
@@ -380,7 +388,7 @@ const PM = (() => {
     if (s.phase === 'vote') {
       const both = d.host && d.guest, voted = s.votes && s.votes[me];
       return `<main class="screen">${head}${scoreBar(s)}
-        <p class="prompt pm-q">${esc(CHARACTERS[s.deck[s.pos]])}: ¿qué dibujo es mejor?</p>
+        <p class="prompt pm-q">${esc(CHARACTERS[s.char])}: ¿qué dibujo es mejor?</p>
         <div class="pm-pics">${pics}</div>
         ${!both ? '<p class="taphint">Llegando los dibujos…</p>'
           : voted ? `<p class="taphint">Has votado. Esperando a ${nameOf(them)}…</p>`
@@ -464,7 +472,7 @@ const PM = (() => {
 
   return {
     view, handle, afterRender, joinRoom,
-    get live() { return P.view === 'game' && !!P.room; },
-    open() { if (P.view === 'error') P.view = 'menu'; go('pm'); },
+    leave,
+    open() { leave(); go('pm'); },
   };
 })();
