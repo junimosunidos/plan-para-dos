@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#130a1e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Plan para dos</title>
+<style>
+@font-face { font-family: 'Shrikhand'; src: url(fonts/shrikhand.woff2) format('woff2'); font-display: swap; }
+@font-face { font-family: 'Figtree'; src: url(fonts/figtree.woff2) format('woff2'); font-weight: 400 900; font-display: swap; }
+/* Layout: one-screen mobile app; neon-sign display type over a plum night sky, each game owns one accent (rose / lilac / amber). Single dark theme by choice. */
+:root {
+  color-scheme: dark;
+  --night: #130a1e;
+  --night-2: #1c1130;
+  --surface: #251839;
+  --surface-2: #31214b;
+  --line: #44325f;
+  --ink: #f8effd;
+  --muted: #bda9d6;
+  --rose: #ff5c93;
+  --amber: #ffbd52;
+  --teal: #55dccb;
+  --lilac: #b590ff;
+  --hot: #ff4b3e;
+  --ok: #5fe39a;
+  --bad: #ff5d6e;
+  --paper: #fbf6ee;
+  --paper-ink: #1f1530;
+  --suit-red: #d8263f;
+  --display: 'Shrikhand', 'Cooper Black', Georgia, serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --r: 18px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 16px;
+  color: var(--ink);
+  background:
+    radial-gradient(120% 60% at 85% -10%, rgba(255, 92, 147, .22), transparent 60%),
+    radial-gradient(90% 50% at -10% 110%, rgba(255, 189, 82, .14), transparent 60%),
+    var(--night);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+}
+#app { min-height: 100%; display: flex; flex-direction: column; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+.screen {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 28px;
+  box-sizing: border-box;
+}
+.screen.enter { animation: rise .38s cubic-bezier(.2, .8, .2, 1); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.neon { font-family: var(--display); font-weight: 400; color: var(--ink); text-shadow: 0 0 18px rgba(255, 92, 147, .55), 0 0 2px rgba(255, 255, 255, .6); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 0 22px; border-radius: 999px;
+  font-weight: 800; font-size: 16px; letter-spacing: .02em;
+  transition: transform .15s, filter .15s, background .15s;
+}
+.btn:active { transform: scale(.97); }
+.btn.primary { background: linear-gradient(135deg, var(--rose), #ff8a5c); color: #2a0b18; box-shadow: 0 10px 30px -10px rgba(255, 92, 147, .8); }
+.btn.primary.amber { background: linear-gradient(135deg, var(--amber), #ff9a4d); color: #2b1600; box-shadow: 0 10px 30px -10px rgba(255, 189, 82, .7); }
+.btn.ghost { background: var(--surface); border: 1px solid var(--line); }
+.btn.big { min-height: 60px; font-size: 18px; letter-spacing: .06em; width: 100%; }
+
+/* Top bar */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; }
+.topbar h2 { font-family: var(--display); font-weight: 400; font-size: 20px; text-align: center; flex: 1; min-width: 0; }
+.back, .tb-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  border-radius: 999px; background: var(--surface); border: 1px solid var(--line);
+  font-weight: 700; font-size: 14px; white-space: nowrap;
+}
+.mus { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: inline-flex; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 12px; }
+.mus i { width: 4px; height: 6px; border-radius: 2px; background: var(--muted); }
+.mus.on { border-color: var(--rose); box-shadow: 0 0 16px -4px var(--rose); }
+.mus.on i { background: var(--rose); animation: eq .9s ease-in-out infinite; }
+.mus.on i:nth-child(2) { animation-delay: -.3s; }
+.mus.on i:nth-child(3) { animation-delay: -.6s; }
+@keyframes eq { 0%, 100% { height: 5px; } 50% { height: 16px; } }
+.tb-right { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 440px) {
+  .back .t { display: none; }
+  .topbar h2 { font-size: 18px; }
+}
+.tb-btn.warn { border-color: var(--bad); color: var(--bad); }
+.tb-spacer { width: 88px; }
+
+/* Setup */
+.setup { justify-content: center; gap: 28px; max-width: 460px; }
+.logo { font-family: var(--display); font-weight: 400; font-size: clamp(52px, 16vw, 84px); line-height: .95; margin-top: 8px; }
+.logo span { color: var(--amber); text-shadow: 0 0 22px rgba(255, 189, 82, .6); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.field input {
+  font: inherit; font-size: 18px; font-weight: 600; color: var(--ink);
+  background: var(--night-2); border: 1px solid var(--line); border-radius: 14px;
+  min-height: 54px; padding: 0 16px;
+}
+.field input::placeholder { color: #7d6a99; }
+.err { color: var(--bad); font-weight: 600; font-size: 14px; }
+.fine { color: var(--muted); font-size: 13px; text-align: center; }
+
+/* Home */
+.hello { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
+.hello-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.hello h1 { font-size: clamp(36px, 11vw, 54px); line-height: 1.05; overflow-wrap: anywhere; }
+.hello h1 .amp { color: var(--amber); }
+.hello p { color: var(--muted); font-size: 17px; }
+.games { display: flex; flex-direction: column; gap: 14px; }
+.game {
+  --acc: var(--rose);
+  position: relative; overflow: hidden; text-align: left;
+  display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center;
+  padding: 20px; border-radius: 26px; background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--acc) 40%, var(--line));
+  box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--acc) 80%, transparent);
+  transition: transform .2s;
+  animation: rise .5s cubic-bezier(.2, .8, .2, 1) backwards;
+}
+.game:nth-child(2) { animation-delay: .07s; }
+.game:nth-child(3) { animation-delay: .14s; }
+.game:active { transform: scale(.98); }
+.game::before { content: ""; position: absolute; inset: 0; background: radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--acc) 24%, transparent), transparent 70%); pointer-events: none; }
+.game.dil { --acc: var(--lilac); }
+.game.peaje { --acc: var(--amber); }
+.game-body { position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.game h3 { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.1; color: var(--ink); }
+.game p { color: var(--muted); font-size: 15px; line-height: 1.4; }
+.game .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.pill { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: var(--night-2); color: var(--muted); }
+.pill.live { background: color-mix(in srgb, var(--acc) 22%, transparent); color: var(--acc); }
+.game .play {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 6px;
+  padding: 10px 18px; border-radius: 999px; background: var(--acc); color: #1b0d24; font-weight: 800; font-size: 15px;
+}
+.art { position: relative; width: 84px; height: 84px; display: grid; place-items: center; }
+.art-csm .bub { position: absolute; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: #1b0d24; }
+.art-csm .bub.a { background: var(--rose); left: 0; top: 4px; }
+.art-csm .bub.b { background: var(--amber); right: 0; bottom: 4px; mix-blend-mode: screen; }
+.art-dil { font-family: var(--display); font-size: 30px; gap: 0; }
+.art-dil .ab { display: flex; align-items: center; gap: 6px; }
+.art-dil .o { width: 34px; height: 46px; border-radius: 10px; display: grid; place-items: center; }
+.art-dil .o.a { background: var(--lilac); color: #1b0d24; transform: rotate(-8deg); }
+.art-dil .o.b { background: var(--teal); color: #1b0d24; transform: rotate(8deg); }
+.art-peaje { display: flex; align-items: center; justify-content: center; }
+.art-peaje i { width: 20px; height: 30px; border-radius: 4px; background: var(--paper); margin-left: -6px; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.art-peaje i:first-child { margin-left: 0; }
+.art-peaje i:nth-child(3) { background: repeating-linear-gradient(45deg, var(--rose) 0 3px, #b52c66 3px 6px); transform: translateY(-8px); }
+.home-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-top: auto; padding-top: 8px; }
+.linkbtn { color: var(--amber); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 8px 0; }
+
+/* ¿Cuánto sabes de mí? – setup */
+.lead { color: var(--muted); font-size: 16px; line-height: 1.45; }
+.modes { display: flex; flex-wrap: wrap; gap: 8px; }
+.mode {
+  min-height: 40px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 14px;
+  background: var(--surface); border: 1px solid var(--line); transition: background .15s, border-color .15s;
+}
+.mode[data-heat="0"] { --mc: var(--teal); }
+.mode[data-heat="1"] { --mc: var(--lilac); }
+.mode[data-heat="2"] { --mc: var(--rose); }
+.mode[data-heat="3"] { --mc: var(--hot); }
+.mode[data-heat="4"] { --mc: var(--amber); }
+.mode.on { background: color-mix(in srgb, var(--mc) 25%, var(--surface)); border-color: var(--mc); color: var(--ink); }
+.bulk { display: flex; gap: 8px; flex-wrap: wrap; }
+.bulk .btn { min-height: 40px; font-size: 14px; padding: 0 16px; }
+.section-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.cat {
+  --cc: var(--teal);
+  text-align: left; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;
+  padding: 14px; border-radius: var(--r); background: var(--surface); border: 1.5px solid var(--line);
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.cat:active { transform: scale(.98); }
+.cat[data-heat="1"] { --cc: var(--lilac); }
+.cat[data-heat="2"] { --cc: var(--rose); }
+.cat[data-heat="3"] { --cc: var(--hot); }
+.cat .ico { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: color-mix(in srgb, var(--cc) 18%, var(--night-2)); }
+.cat .txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cat .nm { font-weight: 800; font-size: 15px; line-height: 1.25; }
+.cat .ds { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.cat .ct { color: var(--muted); font-size: 12px; font-weight: 700; margin-top: 2px; }
+.cat.on { border-color: var(--cc); background: color-mix(in srgb, var(--cc) 13%, var(--surface)); }
+.cat.on .ct { color: var(--cc); }
+.sw { width: 44px; height: 26px; border-radius: 99px; background: var(--night-2); border: 1px solid var(--line); position: relative; flex: none; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); transition: transform .2s, background .2s; }
+.cat.on .sw { background: var(--cc); border-color: var(--cc); }
+.cat.on .sw::after { transform: translateX(18px); background: #1b0d24; }
+.startbar {
+  position: sticky; bottom: 0; margin-top: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--night) 70%, transparent);
+}
+.startbar .sum { text-align: center; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.warnbox { text-align: center; color: var(--ink); background: color-mix(in srgb, var(--bad) 25%, var(--surface)); border: 1px solid var(--bad); border-radius: 14px; padding: 10px 12px; font-weight: 700; font-size: 14px; animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ¿Cuánto sabes de mí? – game */
+.turns { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.who { padding: 8px 16px; border-radius: 999px; font-weight: 800; background: var(--surface); color: var(--muted); border: 1px solid var(--line); transition: all .25s; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who.on { background: var(--rose); color: #2a0b18; border-color: var(--rose); box-shadow: 0 0 24px -4px var(--rose); }
+.qwrap { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.ask { text-align: center; font-size: 18px; color: var(--muted); }
+.ask b { color: var(--ink); }
+.qcard {
+  --cc: var(--teal);
+  position: relative; border-radius: 28px; padding: 28px 22px 22px; min-height: 230px;
+  display: flex; flex-direction: column; gap: 18px; justify-content: space-between;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cc) 22%, var(--surface-2)), var(--surface) 70%);
+  border: 1.5px solid color-mix(in srgb, var(--cc) 55%, transparent);
+  box-shadow: 0 30px 60px -30px color-mix(in srgb, var(--cc) 70%, transparent);
+  animation: deal .45s cubic-bezier(.2, .9, .25, 1.15);
+}
+.qcard[data-heat="1"] { --cc: var(--lilac); }
+.qcard[data-heat="2"] { --cc: var(--rose); }
+.qcard[data-heat="3"] { --cc: var(--hot); }
+@keyframes deal { from { opacity: 0; transform: translateY(26px) rotate(-3deg) scale(.96); } }
+.chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 999px; background: color-mix(in srgb, var(--cc) 25%, transparent); color: var(--ink); }
+.qtext { font-size: clamp(26px, 7.4vw, 36px); font-weight: 800; line-height: 1.15; text-wrap: balance; overflow-wrap: anywhere; }
+.qmeta { color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.progress { height: 6px; border-radius: 6px; background: var(--surface); overflow: hidden; }
+.progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--rose), var(--amber)); border-radius: 6px; transition: width .3s; }
+.endcard { text-align: center; align-items: center; justify-content: center; }
+.endcard h3 { font-family: var(--display); font-weight: 400; font-size: 32px; }
+.endcard p { color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+
+/* Dilemas */
+.dil-screen { cursor: pointer; user-select: none; }
+.dil-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+.dcard {
+  position: relative; border-radius: 30px; padding: 30px 24px; min-height: 300px;
+  display: flex; flex-direction: column; justify-content: center; gap: 20px;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--lilac) 26%, var(--surface-2)), var(--surface) 75%);
+  border: 1.5px solid color-mix(in srgb, var(--lilac) 55%, transparent);
+  box-shadow: 0 30px 70px -30px rgba(181, 144, 255, .75);
+  animation: flip .5s cubic-bezier(.2, .9, .25, 1.1);
+}
+@keyframes flip { from { opacity: 0; transform: perspective(900px) rotateY(-24deg) translateX(30px); } }
+.dcard .num { font-family: var(--display); font-size: 18px; color: var(--lilac); }
+.dcard .dtext { font-size: clamp(24px, 6.8vw, 34px); font-weight: 800; line-height: 1.2; text-wrap: pretty; overflow-wrap: anywhere; }
+.taphint { text-align: center; color: var(--muted); font-size: 14px; font-weight: 600; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+
+/* Peaje */
+.peaje-screen { max-width: 1100px; gap: 12px; padding-block: 10px 18px; --cw: min(17vw, 18vh, 100px); }
+.rotate { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 14px; border-radius: 14px; background: color-mix(in srgb, var(--amber) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--amber) 50%, transparent); font-size: 14px; font-weight: 600; }
+.rotate button { font-weight: 800; padding: 6px 10px; border-radius: 10px; background: var(--night-2); }
+.board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 12px 8px 10px; border-radius: 22px; background: radial-gradient(120% 140% at 50% 0%, #1f5446 0%, #123329 70%); border: 1px solid #2d6b58; box-shadow: inset 0 0 40px rgba(0, 0, 0, .45); }
+.slot { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.slot .lbl { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #a9d8c6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.slot.cp .lbl { color: var(--amber); }
+.slot .cardbox { border-radius: calc(var(--cw) * .12); padding: 3px; transition: box-shadow .25s, background .25s; }
+.slot.here .cardbox { background: var(--amber); box-shadow: 0 0 22px 2px rgba(255, 189, 82, .7); }
+.tokens { display: flex; gap: 4px; min-height: 22px; }
+.tok { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 900; color: #1b0d24; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.tok.p0 { background: var(--rose); }
+.tok.p1 { background: var(--teal); }
+.tok.dim { opacity: .55; }
+
+.pcard { width: var(--cw); aspect-ratio: 5 / 7; border-radius: calc(var(--cw) * .1); background: var(--paper); color: var(--paper-ink); position: relative; display: grid; place-items: center; box-shadow: 0 6px 14px rgba(0, 0, 0, .45); font-weight: 900; flex: none; }
+.pcard.red { color: var(--suit-red); }
+.pcard .cr { position: absolute; top: 6%; left: 9%; font-size: calc(var(--cw) * .22); line-height: 1; display: flex; flex-direction: column; align-items: center; }
+.pcard .cr small { font-size: .8em; }
+.pcard .cs { font-size: calc(var(--cw) * .46); line-height: 1; margin-top: 12%; }
+.pcard.back { background: repeating-linear-gradient(45deg, var(--rose) 0 5px, #b52c66 5px 10px); border: 3px solid var(--paper); box-sizing: border-box; }
+.pcard.back .q { font-family: var(--display); color: var(--paper); font-size: calc(var(--cw) * .5); text-shadow: 0 2px 0 #7d1844; }
+.pcard.back.deck { background: repeating-linear-gradient(45deg, #2a6b58 0 5px, #1d4c3f 5px 10px); }
+.pcard.back.deck .q { font-family: var(--body); font-size: calc(var(--cw) * .24); font-weight: 900; text-shadow: none; font-variant-numeric: tabular-nums; }
+.pcard.drawn { animation: draw .5s cubic-bezier(.2, .9, .25, 1.15); }
+@keyframes draw { from { transform: perspective(600px) rotateY(90deg) translateY(-10px); } }
+.pcard.mini { --cw: 30px; border-radius: 5px; box-shadow: none; }
+.pcard.mini .cr { display: none; }
+.pcard.mini .cs { margin: 0; font-size: 12px; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+
+.ptable { display: grid; grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.pbox { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.turnpill { padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; color: #1b0d24; }
+.turnpill.p0 { background: var(--rose); }
+.turnpill.p1 { background: var(--teal); }
+.where { font-size: 13px; color: var(--muted); font-weight: 700; }
+.prompt { font-size: 17px; font-weight: 700; line-height: 1.3; }
+.bets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bets.suits { grid-template-columns: repeat(4, 1fr); }
+.bet { min-height: 50px; border-radius: 14px; font-weight: 900; font-size: 16px; letter-spacing: .06em; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform .12s; }
+.bet:active { transform: scale(.95); }
+.bet.up { background: linear-gradient(160deg, var(--ok), #2fb873); color: #082417; }
+.bet.down { background: linear-gradient(160deg, var(--rose), #d23a73); color: #2a0b18; }
+.bet.suit { background: var(--paper); color: var(--paper-ink); font-size: 24px; line-height: 1; padding: 6px 2px; }
+.bet.suit.red { color: var(--suit-red); }
+.bet.suit small { font-family: var(--body); font-size: 10px; letter-spacing: 0; font-weight: 800; color: var(--paper-ink); }
+.res { font-weight: 900; font-size: 17px; line-height: 1.25; }
+.res.ok { color: var(--ok); }
+.res.bad { color: var(--bad); }
+.drink { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 4.6vw, 28px); line-height: 1.1; color: var(--amber); text-shadow: 0 0 16px rgba(255, 189, 82, .6); animation: pop .5s cubic-bezier(.2, .9, .3, 1.4); }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+.note { font-size: 13px; color: var(--muted); }
+.drawcol { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0 4px; }
+.drawcol .note { text-align: center; font-variant-numeric: tabular-nums; }
+.hints h4 { margin: 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber); }
+.hints ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto; }
+.hints li { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.hints .tag { font-weight: 900; padding: 2px 8px; border-radius: 6px; font-size: 12px; letter-spacing: .04em; }
+.hints .tag.mayor { background: color-mix(in srgb, var(--ok) 25%, transparent); color: var(--ok); }
+.hints .tag.menor { background: color-mix(in srgb, var(--rose) 25%, transparent); color: var(--rose); }
+.hints .by { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; }
+
+@media (orientation: portrait) {
+  .peaje-screen { --cw: min(16vw, 96px); }
+  .ptable { grid-template-columns: 1fr; }
+  .drawcol { flex-direction: row; gap: 12px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .peaje-screen { gap: 8px; padding-block: 6px 10px; }
+  .topbar { min-height: 36px; }
+  .topbar h2 { font-size: 18px; }
+  .back, .tb-btn { min-height: 34px; }
+  .board { padding: 8px 8px 6px; gap: 6px; }
+  .slot { gap: 3px; }
+  .tokens { min-height: 18px; }
+  .tok { width: 18px; height: 18px; font-size: 10px; }
+  .pbox { padding: 10px 12px; gap: 6px; }
+  .prompt, .res { font-size: 15px; }
+  .bet { min-height: 42px; }
+  .btn { min-height: 44px; }
+  .hints ul { max-height: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const DATA = {"csm": [["Fecha de cumpleaños", "Color favorito", "Comida favorita", "Bebida favorita", "Postre favorito", "Helado favorito", "Animal favorito", "Canción favorita", "Grupo o cantante favorito", "Película favorita", "Serie favorita", "Actor o actriz favorito/a", "Libro favorito", "Estación del año favorita", "Número favorito", "Olor favorito", "Flor favorita", "Deporte favorito", "Equipo deportivo favorito", "Destino de viaje soñado", "País que más quiere visitar", "Restaurante favorito", "Tienda favorita", "Aplicación que más utiliza", "Bebida que nunca pediría", "Comida que no soporta", "Mayor hobby", "Asignatura favorita", "Asignatura que más odiaba", "Profesión soñada"], ["Mayor miedo", "Mayor inseguridad", "Mayor manía", "Peor defecto", "Mejor virtud", "Mayor talento", "Hábito más raro", "Qué le pone de mal humor", "Qué le hace reír siempre", "Qué hace cuando está triste", "Qué hace cuando se enfada", "Qué le da vergüenza", "Qué le produce ansiedad o nervios", "Qué le hace sentirse orgulloso/a", "Qué le relaja más", "Qué es lo primero que hace al despertarse", "Qué es lo último que hace antes de dormir", "Cuánto tarda en arreglarse", "Qué compra compulsivamente", "Qué haría si ganara un millón de euros"], ["Qué busca en una pareja", "Cuál es su mayor green flag", "Cuál es su mayor red flag", "Qué le atrae primero de alguien", "Qué le enamora de una persona", "Qué le hace perder el interés", "Cuál sería su cita perfecta", "Qué detalle romántico le gusta más", "Qué lenguaje del amor prefiere", "Qué le hace sentir querido/a", "Qué le hace sentir celos", "Qué considera una infidelidad", "Qué es lo que más valora en una relación", "Qué es lo que menos soporta de una pareja", "Qué apodo cariñoso le gusta", "Qué canción dedicaría a alguien", "Qué haría para conquistar a alguien", "Cuál es su mayor miedo en el amor", "Qué gesto le parece irresistible", "Si cree en el amor a primera vista"], ["Qué parte del cuerpo le atrae más", "Qué es lo primero que mira en alguien", "Qué tipo de sonrisa le gusta", "Qué tipo de voz le resulta atractiva", "Qué estilo de ropa le parece más sexy", "Qué tipo de persona le atrae físicamente", "Qué le parece más sexy: la mirada o la sonrisa", "Si prefiere dar el primer paso o que lo den", "Si le gusta más conquistar o ser conquistado/a", "Qué tipo de beso prefiere", "Dónde le gusta que le besen", "Qué le pone más nervioso/a cuando liga", "Qué cumplido le gusta recibir", "Qué mensaje le parece más seductor", "Qué gesto inocente le resulta sexy", "Qué le parece más atractivo: seguridad o timidez", "Si prefiere tensión sexual o espontaneidad", "Qué situación le parece ideal para un primer beso", "Qué le hace sentir deseado/a", "Qué es lo que más le excita de la seducción"], ["Si prefiere sexo romántico o salvaje", "Si prefiere llevar la iniciativa o que la lleven", "Si le gusta más dar placer o recibirlo", "Qué importancia tiene el sexo en una relación", "Si prefiere encuentros espontáneos o planificados", "Qué importancia les da a los preliminares", "Si prefiere los besos o las caricias", "Si le gusta hablar durante el sexo", "Si prefiere un ambiente romántico o atrevido", "Si prefiere la luz encendida, tenue o apagada", "Si tiene más interés en experimentar o en lo conocido", "Qué le ayuda a entrar en ambiente", "Qué le resulta más excitante de una pareja", "Qué tipo de caricias le gustan más", "Si le gusta recibir mensajes picantes", "Si le gusta el sexting", "Si le atrae la idea de utilizar juguetes sexuales", "Si prefiere tomar el control o dejarse llevar", "Qué considera imprescindible para disfrutar del sexo", "Qué le corta el ambiente inmediatamente", "Qué fantasía le gustaría cumplir", "Qué experiencia íntima le gustaría probar", "Qué le gustaría que su pareja hiciera más", "Qué le da vergüenza pedir en la cama", "Qué considera su mayor punto débil sexual"], ["Qué fetiche le genera más curiosidad", "Si tiene algún fetiche que no haya contado", "Si le atraen los juegos de roles", "Qué papel elegiría en un juego de roles", "Si le gusta dominar o ser dominado/a", "Si le atraen los juegos de poder consensuados", "Si le gustaría probar un antifaz o vendarse los ojos", "Si le atrae la idea de utilizar esposas o restricciones suaves", "Si le gusta la lencería o la ropa interior especial", "Si le atraen los masajes sensuales", "Si le gustaría experimentar con juguetes sexuales", "Si le genera curiosidad el juego de temperaturas", "Si le atrae la idea de enviar fotos sensuales a su pareja", "Si le gusta la idea de hablar de fantasías durante el sexo", "Si le atrae probar algo nuevo en un lugar diferente", "Qué fantasía le da más vergüenza confesar", "Qué práctica le genera curiosidad, aunque nunca la haya probado", "Qué fantasía preferiría mantener solo en su imaginación", "Qué fetiche no entiende", "Qué práctica íntima no probaría nunca"], ["A qué edad dio su primer beso", "A qué edad tuvo su primera relación", "Quién dio su primer beso", "Cuál ha sido su mayor locura por amor", "Cuál ha sido su cita más desastrosa", "Cuál ha sido su experiencia más vergonzosa ligando", "Si alguna vez ha tenido una aventura inesperada", "Si alguna vez ha enviado un mensaje picante", "Si alguna vez ha tenido una fantasía con alguien conocido", "Si alguna vez ha sentido atracción por alguien prohibido", "Si alguna vez ha fingido que alguien no le gustaba", "Cuál ha sido su mayor atrevimiento sexual", "Qué experiencia íntima repetiría", "Qué experiencia no repetiría", "Qué secreto sobre su vida amorosa sorprendería más", "Qué es lo más atrevido que ha hecho para ligar", "Si alguna vez ha tenido una cita que terminó en sexo", "Qué es lo más vergonzoso que le ha pasado en una situación íntima", "Qué confesión amorosa nunca ha hecho", "Qué experiencia le gustaría vivir alguna vez"], ["Qué fue lo primero que le llamó la atención de la otra persona", "Qué parte de su físico le gusta más", "Qué cree que la otra persona encuentra más atractivo de él/ella", "Qué cree que le enamoraría de él/ella", "Qué cree que le pone más nervioso/a de su presencia", "Qué tipo de beso cree que le gustaría recibir de él/ella", "Qué cree que le gustaría hacer en una cita juntos", "Qué cree que le da más vergüenza confesarle", "Qué cree que le gustaría probar juntos", "Qué fantasía cree que podría tener la otra persona", "Qué cree que le resulta más sexy de él/ella", "Qué cree que le gustaría que hiciera más a menudo", "Qué cree que nunca se atrevería a pedirle", "Qué cree que le daría más celos", "Qué cree que le haría perder el interés", "Qué cree que le gustaría descubrir de él/ella", "Qué cree que le gustaría hacer si estuvieran solos toda la noche", "Qué cree que podría pasar entre ambos si se dejaran llevar", "Qué pregunta íntima cree que le gustaría hacerle", "Qué cree que sería lo más atrevido que harían juntos"]], "dil": ["¿Aceptarías un trabajo de tus sueños si implicara vivir en otro país durante cinco años sin tu pareja?", "¿Preferirías saber lo que la gente piensa realmente de ti o que nadie pudiera mentirte nunca?", "¿Preferirías poder escuchar los pensamientos de una sola persona o hacer que una persona escuchara los tuyos?", "¿Preferirías saber qué persona de tu vida te tiene envidia o qué persona no te soporta?", "¿Preferirías que tu pareja te contara el nombre de todas las personas que le han atraído estando contigo o conocer todos sus pensamientos sexuales durante una semana", "¿Preferirías que tu pareja pudiera leer todas las conversaciones que has tenido antes de conocerla o que tú pudieras leer las suyas?", "¿Preferirías poder conocer la primera impresión que alguien tuvo de ti o la última cosa que pensó de ti?", "¿Preferirías ser la persona más inteligente del mundo o la más querida?", "¿Preferirías saber cómo vas a morir o cuándo vas a morir?", "¿Podrías ser rico sin que nadie lo supiera?", "¿Preferirías trabajar solo cuatro horas al día haciendo algo que no te gusta o trabajar doce horas haciendo lo que más te apasiona?", "¿Preferirías poder comprar cualquier objeto del mundo o poder viajar gratis a cualquier lugar?", "¿Preferirías jubilarte a los 30 años con poco dinero o a los 60 con muchísimo?", "¿Devolverías una cartera con 10.000 € si supieras que quien la perdió nunca podría identificarte?", "¿Preferirías salvar a cinco desconocidos o a tu mejor amigo si solo pudieras elegir una opción?", "¿Preferirías castigar a alguien que hizo algo malo por una buena razón o elogiar a alguien que hizo algo bueno por una razón egoísta?", "¿Harías algo ilegal si supieras con absoluta certeza que nadie sufriría ningún daño?", "¿Preferirías poder detener el tiempo durante una hora al día o teletransportarte una vez al día a cualquier lugar?", "¿Preferirías ser invisible cuando quisieras o poder leer la mente de cualquier persona?", "¿Preferirías poder hablar todos los idiomas del mundo o dominar todas las habilidades físicas?", "¿Preferirías vivir en un mundo sin enfermedades o en uno sin guerras?", "¿Preferirías poder viajar al pasado sin cambiar nada o al futuro sin poder volver?", "¿Preferirías tener un botón que te permitiera borrar un día de tu vida o uno que te permitiera repetirlo?", "¿Preferirías poder hablar con animales o comunicarte con cualquier persona sin importar dónde esté?", "¿Preferirías ser siempre la persona que organiza los planes o que los demás te incluyeran sin tener que pedirlo?", "¿Preferirías que todo el mundo te cayera bien o caerle bien a todo el mundo?", "¿Ayudarías económicamente a un familiar que siempre toma malas decisiones si supieras que probablemente volverá a equivocarse?", "Si pudieras garantizar que una persona de tu elección tendría una vida feliz, pero nunca podrías volver a verla, ¿lo harías?", "Si pudieras eliminar una emoción humana para siempre, ¿cuál elegirías?", "Si todos recibieran exactamente el mismo salario, independientemente de su trabajo, ¿crees que el mundo sería mejor?", "Si pudieras conocer una sola estadística exacta sobre el futuro de la humanidad, ¿cuál elegirías?", "¿Ser incapaz de mentir o detectar todas las mentiras?", "¿No volver a usar redes sociales o no volver a ver películas y series?", "¿Vivir sin música o vivir sin poder viajar?", "¿Poder leer cualquier libro en un segundo o aprender cualquier habilidad en una semana?", "¿Tener siempre razón, pero no poder demostrarlo, o equivocarte siempre, pero convencer a todos?"]};
+
+const CATS = [
+  { id: 'datos', name: 'Datos personales y gustos', desc: 'Cumpleaños, colores favoritos, comida, música, aficiones y preferencias.', icon: '🎂', heat: 0 },
+  { id: 'perso', name: 'Personalidad y costumbres', desc: 'Miedos, manías, defectos, virtudes, hábitos y secretos personales.', icon: '🎭', heat: 0 },
+  { id: 'amor', name: 'Amor y relaciones', desc: 'Romanticismo, citas ideales, celos, sentimientos y preferencias sentimentales.', icon: '💘', heat: 1 },
+  { id: 'atrac', name: 'Atracción y coqueteo', desc: 'Atracción física, besos, seducción, tensión sexual y primeras impresiones.', icon: '🌶️', heat: 2 },
+  { id: 'sexo', name: 'Sexo y preferencias íntimas (+18)', desc: 'Preferencias sexuales, preliminares, iniciativa, fantasías y curiosidades íntimas.', icon: '🔥', heat: 3 },
+  { id: 'fetic', name: 'Fetiches y fantasías (+18)', desc: 'Juegos de roles, juguetes sexuales, dinámicas consensuadas y fantasías.', icon: '😈', heat: 3 },
+  { id: 'exper', name: 'Experiencias y secretos íntimos (+18)', desc: 'Experiencias pasadas, confesiones atrevidas y anécdotas íntimas.', icon: '🔞', heat: 3 },
+  { id: 'otra', name: 'Sobre la otra persona', desc: 'Preguntas para adivinar qué le atrae del otro jugador, qué le gustaría hacer juntos o qué piensa sobre él o ella.', icon: '👀', heat: 2 },
+].map((c, i) => ({ ...c, q: DATA.csm[i] }));
+const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+const MODES = [
+  { id: 'suave', name: 'Suave', heat: 0, cats: ['datos', 'perso'] },
+  { id: 'romantico', name: 'Romántico', heat: 1, cats: ['datos', 'perso', 'amor'] },
+  { id: 'coqueteo', name: 'Coqueteo', heat: 2, cats: ['amor', 'atrac'] },
+  { id: 'picante', name: 'Picante', heat: 3, cats: ['atrac', 'sexo', 'fetic'] },
+  { id: 'muy', name: 'Muy picante', heat: 3, cats: ['sexo', 'fetic', 'exper'] },
+  { id: 'todo', name: 'Todo mezclado', heat: 4, cats: CATS.map(c => c.id) },
+];
+
+const DILEMAS = DATA.dil;
+
+const SUITS = [
+  { k: 'h', s: '♥', n: 'Corazones', red: true },
+  { k: 'd', s: '♦', n: 'Diamantes', red: true },
+  { k: 'c', s: '♣', n: 'Tréboles', red: false },
+  { k: 's', s: '♠', n: 'Picas', red: false },
+];
+const SUIT = Object.fromEntries(SUITS.map(s => [s.k, s]));
+const RANK = v => ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' }[v] || String(v));
+const POS_NAME = ['posición 1', 'posición 2', 'el checkpoint', 'posición 4', 'posición 5'];
+
+/* ---------- música: synthwave original generada con Web Audio ---------- */
+const Music = (() => {
+  const BPM = 104, STEP = 60 / BPM / 4;
+  // La menor · Fa · Do · Sol, un compás por acorde
+  const CHORDS = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]];
+  const ROOTS = [33, 29, 36, 31];
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  let ctx = null, master, revSend, dlySend, noise, timer = null, step = 0, next = 0;
+  let playing = false;
+
+  function impulse(sec, decay) {
+    const len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return b;
+  }
+  function init() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.ratio.value = 4;
+    master = ctx.createGain(); master.gain.value = 0;
+    master.connect(comp); comp.connect(ctx.destination);
+    const rev = ctx.createConvolver(); rev.buffer = impulse(2.6, 3.2);
+    revSend = ctx.createGain(); revSend.gain.value = .5; revSend.connect(rev); rev.connect(master);
+    const dly = ctx.createDelay(1), fb = ctx.createGain(), tone = ctx.createBiquadFilter();
+    dly.delayTime.value = STEP * 3; fb.gain.value = .38; tone.type = 'lowpass'; tone.frequency.value = 2400;
+    dlySend = ctx.createGain(); dlySend.gain.value = .35;
+    dlySend.connect(dly); dly.connect(tone); tone.connect(fb); fb.connect(dly); tone.connect(master);
+    noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const nd = noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  }
+  function env(g, t, peak, a, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+  function route(node, rev = 0, dly = 0) {
+    node.connect(master);
+    if (rev) { const s = ctx.createGain(); s.gain.value = rev; node.connect(s); s.connect(revSend); }
+    if (dly) { const s = ctx.createGain(); s.gain.value = dly; node.connect(s); s.connect(dlySend); }
+  }
+  function kick(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + .14);
+    env(g, t, .9, .003, .38); o.connect(g); route(g); o.start(t); o.stop(t + .45);
+  }
+  function snare(t) {
+    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = noise; f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = .8;
+    env(g, t, .55, .002, .2); n.connect(f); f.connect(g); route(g, 1.4); n.start(t); n.stop(t + .3);
+    const o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = 185; env(og, t, .3, .002, .09); o.connect(og); route(og, .6); o.start(t); o.stop(t + .15);
+  }
+  function hat(t, open) {
+    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = noise; f.type = 'highpass'; f.frequency.value = 7500;
+    env(g, t, open ? .09 : .06, .001, open ? .22 : .04); n.connect(f); f.connect(g); route(g, .15); n.start(t); n.stop(t + .3);
+  }
+  function bass(t, m) {
+    const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = mtof(m);
+    f.type = 'lowpass'; f.Q.value = 6; f.frequency.setValueAtTime(900, t); f.frequency.exponentialRampToValueAtTime(160, t + .2);
+    env(g, t, .32, .004, .22); o.connect(f); f.connect(g); route(g); o.start(t); o.stop(t + .3);
+  }
+  function pad(t, chord, dur) {
+    const f = ctx.createBiquadFilter(), g = ctx.createGain();
+    f.type = 'lowpass'; f.frequency.value = 1300;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.06, t + .5);
+    g.gain.setValueAtTime(.06, t + dur - .3); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + .4);
+    f.connect(g); route(g, .9);
+    chord.forEach(m => [-8, 8].forEach(det => {
+      const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(m); o.detune.value = det;
+      o.connect(f); o.start(t); o.stop(t + dur + .5);
+    }));
+  }
+  function arp(t, m) {
+    const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = 'square'; o.frequency.value = mtof(m); f.type = 'lowpass'; f.frequency.value = 2600;
+    env(g, t, .055, .003, .14); o.connect(f); f.connect(g); route(g, .3, 1); o.start(t); o.stop(t + .2);
+  }
+  // 4 compases de intro (pad + arpegio) y luego un bucle de 12 compases con todo
+  function play(i, t) {
+    let bar = Math.floor(i / 16);
+    if (bar >= 4) bar = 4 + (bar - 4) % 12;
+    const s = i % 16, ch = CHORDS[bar % 4], root = ROOTS[bar % 4], full = bar >= 4, brk = bar >= 12 && bar < 14;
+    if (s === 0) pad(t, ch, STEP * 16);
+    const notes = [ch[0], ch[1], ch[2], ch[0] + 12];
+    arp(t, notes[[0, 1, 2, 3, 2, 1, 3, 2][s % 8]] + 12);
+    if (!full) return;
+    if (!brk && (s === 0 || s === 8 || (s === 10 && bar % 2))) kick(t);
+    if (s === 4 || s === 12) snare(t);
+    if (s % 2 === 0) hat(t, s === 6 || s === 14);
+    if (!brk && s % 2 === 0) bass(t, root + (s % 4 === 2 ? 12 : 0));
+  }
+  function tick() {
+    while (next < ctx.currentTime + .15) { play(step, next); next += STEP; step++; }
+  }
+  return {
+    get on() { return playing; },
+    start() {
+      try {
+        if (!ctx) init();
+        ctx.resume();
+        if (playing) return;
+        playing = true; step = 0; next = ctx.currentTime + .08;
+        master.gain.cancelScheduledValues(ctx.currentTime);
+        master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+        master.gain.linearRampToValueAtTime(.6, ctx.currentTime + 1.5);
+        timer = setInterval(tick, 25);
+      } catch (e) { playing = false; }
+    },
+    stop() {
+      if (!playing) return;
+      playing = false; clearInterval(timer);
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + .4);
+    },
+    pause() { if (ctx && playing) ctx.suspend(); },
+    resume() { if (ctx && playing) ctx.resume(); },
+  };
+})();
+let musicPref = (() => { try { return localStorage.getItem('plan2.music') !== '0'; } catch (e) { return true; } })();
+function setMusic(on) {
+  musicPref = on;
+  try { localStorage.setItem('plan2.music', on ? '1' : '0'); } catch (e) {}
+  on ? Music.start() : Music.stop();
+}
+document.addEventListener('visibilitychange', () => document.hidden ? Music.pause() : Music.resume());
+// El navegador solo deja sonar audio tras un toque: arranca con el primero si está activada
+document.addEventListener('pointerdown', () => { if (musicPref && !Music.on) { Music.start(); syncMusicBtns(); } }, { once: true });
+const musicBtn = () => `<button class="mus ${Music.on ? 'on' : ''}" data-act="music" aria-pressed="${Music.on}" aria-label="${Music.on ? 'Apagar música' : 'Encender música'}"><i></i><i></i><i></i></button>`;
+
+function syncMusicBtns() {
+  document.querySelectorAll('.mus').forEach(b => {
+    b.classList.toggle('on', Music.on);
+    b.setAttribute('aria-pressed', Music.on);
+    b.setAttribute('aria-label', Music.on ? 'Apagar música' : 'Encender música');
+  });
+}
+
+/* ---------- state ---------- */
+let S = {
+  view: 'setup',
+  names: null,
+  csmSel: [],
+  csmWarn: false,
+  csmGame: null,
+  dil: null,
+  peaje: null,
+  peajeConfirm: false,
+  rotateDismissed: false,
+};
+
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const N = i => esc(S.names[i]);
+const initial = i => esc((S.names[i].trim()[0] || '?').toUpperCase());
+
+function saveNames() { try { sessionStorage.setItem('plan2.names', JSON.stringify(S.names)); } catch (e) {} }
+function loadNames() { try { const v = JSON.parse(sessionStorage.getItem('plan2.names')); if (Array.isArray(v) && v.length === 2 && v.every(x => typeof x === 'string' && x.trim())) return v; } catch (e) {} return null; }
+
+let lastView = null;
+let inGame = false;
+function go(view) {
+  const game = !['home', 'setup'].includes(view);
+  if (game && !inGame) { history.pushState({ game: true }, ''); inGame = true; }
+  if (!game && inGame) { inGame = false; history.back(); }
+  S.view = view; S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0); }
+function render() {
+  app.innerHTML = VIEWS[S.view]();
+  if (S.view !== lastView) { app.firstElementChild?.classList.add('enter'); lastView = S.view; }
+}
+
+const topbar = (title, right = '') =>
+  `<header class="topbar"><button class="back" data-act="home" aria-label="Volver al inicio">←<span class="t"> Inicio</span></button><h2>${title}</h2><div class="tb-right">${musicBtn()}${right}</div></header>`;
+
+/* ---------- views ---------- */
+const VIEWS = {
+  setup() {
+    const n = S.names || ['', ''];
+    return `<main class="screen setup">
+      <div>
+        <div class="eyebrow">Juegos para beber en pareja · +18</div>
+        <h1 class="logo neon">Plan<br><span>para dos</span></h1>
+      </div>
+      <form class="panel" id="names-form" novalidate>
+        <div class="field"><label for="p1">Jugador 1</label><input id="p1" maxlength="16" autocomplete="off" placeholder="Nombre" value="${esc(n[0])}"></div>
+        <div class="field"><label for="p2">Jugador 2</label><input id="p2" maxlength="16" autocomplete="off" placeholder="Nombre" value="${esc(n[1])}"></div>
+        <p class="err" id="names-err" hidden>Escribid los dos nombres para continuar.</p>
+        <button class="btn primary big" type="submit">Empezar la noche</button>
+      </form>
+      <p class="fine">Los nombres se guardan solo durante esta sesión y se usan en todos los juegos.</p>
+    </main>`;
+  },
+
+  home() {
+    const csmLive = S.csmGame && S.csmGame.i < S.csmGame.pool.length;
+    const peajeLive = S.peaje && !['won', 'empty'].includes(S.peaje.phase);
+    const dilLive = S.dil && S.dil.i > 0 && S.dil.i < S.dil.order.length;
+    return `<main class="screen">
+      <div class="hello">
+        <div class="hello-top"><div class="eyebrow">Esta noche juegan</div>${musicBtn()}</div>
+        <h1 class="neon">${N(0)} <span class="amp">&amp;</span> ${N(1)}</h1>
+        <p>Elegid un juego para empezar.</p>
+      </div>
+      <section class="games" aria-label="Juegos">
+        <button class="game csm" data-act="open" data-game="csm">
+          <div class="game-body">
+            <h3>¿Cuánto sabes de mí?</h3>
+            <p>Elegid categorías, de suaves a muy picantes, y descubrid cuánto os conocéis.</p>
+            <div class="meta"><span class="pill">175 preguntas</span><span class="pill">8 categorías</span>${csmLive ? '<span class="pill live">Partida en curso</span>' : ''}</div>
+            <span class="play">${csmLive ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-csm" aria-hidden="true"><span class="bub a">${initial(0)}</span><span class="bub b">${initial(1)}</span></div>
+        </button>
+        <button class="game dil" data-act="open" data-game="dil">
+          <div class="game-body">
+            <h3>Dilemas</h3>
+            <p>Un dilema cada vez. Tocad la pantalla para pasar al siguiente.</p>
+            <div class="meta"><span class="pill">${DILEMAS.length} dilemas</span>${dilLive ? `<span class="pill live">Vais por el ${S.dil.i + 1}</span>` : ''}</div>
+            <span class="play">${dilLive ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-dil" aria-hidden="true"><div class="ab"><span class="o a">A</span><span class="o b">B</span></div></div>
+        </button>
+        <button class="game peaje" data-act="open" data-game="peaje">
+          <div class="game-body">
+            <h3>Peaje</h3>
+            <p>Mayor o menor a lo largo de cinco cartas, con una carta misteriosa en el centro que nunca se revela.</p>
+            <div class="meta"><span class="pill">Baraja de 52</span><span class="pill">En horizontal</span>${peajeLive ? '<span class="pill live">Partida en curso</span>' : ''}</div>
+            <span class="play">${peajeLive ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-peaje" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </button>
+      </section>
+      <footer class="home-foot"><span>Bebed con responsabilidad.</span><button class="linkbtn" data-act="rename">Cambiar nombres</button></footer>
+    </main>`;
+  },
+
+  csmSetup() {
+    const sel = new Set(S.csmSel);
+    const total = CATS.filter(c => sel.has(c.id)).reduce((a, c) => a + c.q.length, 0);
+    const same = (a, b) => a.length === b.size && a.every(x => b.has(x));
+    const live = S.csmGame && S.csmGame.i < S.csmGame.pool.length;
+    return `<main class="screen">
+      ${topbar('¿Cuánto sabes de mí?')}
+      <p class="lead">Elegid qué preguntas queréis en la partida. Podéis usar un modo rápido y luego ajustar las categorías una a una.</p>
+      <section class="stack" aria-label="Modos rápidos">
+        <div class="eyebrow">Modos rápidos</div>
+        <div class="modes">${MODES.map(m => `<button class="mode ${same(m.cats, sel) ? 'on' : ''}" data-heat="${m.heat}" data-act="mode" data-mode="${m.id}" aria-pressed="${same(m.cats, sel)}">${m.name}</button>`).join('')}</div>
+      </section>
+      <section class="stack" aria-label="Categorías">
+        <div class="section-label"><div class="eyebrow">Categorías</div></div>
+        <div class="bulk"><button class="btn ghost" data-act="all">Seleccionar todas</button><button class="btn ghost" data-act="none">Desmarcar todas</button></div>
+        <div class="cats">${CATS.map(c => `
+          <button class="cat ${sel.has(c.id) ? 'on' : ''}" data-heat="${c.heat}" data-act="cat" data-cat="${c.id}" role="switch" aria-checked="${sel.has(c.id)}">
+            <span class="ico" aria-hidden="true">${c.icon}</span>
+            <span class="txt"><span class="nm">${c.name}</span><span class="ds">${c.desc}</span><span class="ct">${c.q.length} preguntas</span></span>
+            <span class="sw" aria-hidden="true"></span>
+          </button>`).join('')}</div>
+      </section>
+      <div class="startbar">
+        ${S.csmWarn ? '<div class="warnbox" role="alert">Elegid al menos una categoría antes de empezar.</div>' : ''}
+        <div class="sum">${sel.size} ${sel.size === 1 ? 'categoría' : 'categorías'} · ${total} preguntas</div>
+        <button class="btn primary big" data-act="csm-start">EMPEZAR A JUGAR</button>
+        ${live ? '<button class="btn ghost" data-act="csm-resume">Continuar la partida en curso</button>' : ''}
+      </div>
+    </main>`;
+  },
+
+  csmGame() {
+    const g = S.csmGame;
+    const right = '<button class="tb-btn" data-act="csm-config">Categorías</button>';
+    if (g.i >= g.pool.length) {
+      return `<main class="screen">
+        ${topbar('¿Cuánto sabes de mí?', right)}
+        <div class="qwrap">
+          <div class="qcard endcard" data-heat="2">
+            <h3 class="neon">¡Fin de la partida!</h3>
+            <p>Habéis respondido las ${g.pool.length} preguntas de las categorías elegidas.</p>
+            <div class="stack" style="width:100%">
+              <button class="btn primary big" data-act="csm-again">Jugar otra vez</button>
+              <button class="btn ghost" data-act="csm-config">Cambiar categorías</button>
+            </div>
+          </div>
+        </div>
+      </main>`;
+    }
+    const item = g.pool[g.i];
+    const c = CAT[item.c];
+    const t = g.turn, o = 1 - g.turn;
+    return `<main class="screen">
+      ${topbar('¿Cuánto sabes de mí?', right)}
+      <div class="turns" aria-label="Turno"><span class="who ${t === 0 ? 'on' : ''}">${N(0)}</span><span class="who ${t === 1 ? 'on' : ''}">${N(1)}</span></div>
+      <div class="qwrap">
+        <p class="ask">Turno de <b>${N(t)}</b>: ¿cuánto sabes de <b>${N(o)}</b>?</p>
+        <article class="qcard" data-heat="${c.heat}" aria-live="polite">
+          <span class="chip"><span aria-hidden="true">${c.icon}</span>${c.name}</span>
+          <p class="qtext">${esc(item.t)}</p>
+          <span class="qmeta">Pregunta ${g.i + 1} de ${g.pool.length}</span>
+        </article>
+        <div class="progress" aria-hidden="true"><i style="width:${(g.i + 1) / g.pool.length * 100}%"></i></div>
+      </div>
+      <button class="btn primary big" data-act="csm-next">${g.i + 1 < g.pool.length ? `Siguiente · turno de ${N(o)}` : 'Terminar'}</button>
+    </main>`;
+  },
+
+  dil() {
+    const d = S.dil;
+    const done = d.i >= d.order.length;
+    const body = done
+      ? `<article class="dcard" style="text-align:center;align-items:center">
+          <span class="num">Fin</span>
+          <p class="dtext">Ya habéis visto los ${d.order.length} dilemas.</p>
+          <button class="btn primary big" data-act="dil-restart">Volver a empezar</button>
+        </article>`
+      : `<article class="dcard" aria-live="polite">
+          <span class="num">Dilema ${d.i + 1} / ${d.order.length}</span>
+          <p class="dtext">${esc(DILEMAS[d.order[d.i]])}</p>
+        </article>
+        <p class="taphint">Toca en cualquier parte para el siguiente dilema</p>`;
+    return `<main class="screen dil-screen" ${done ? '' : 'data-tap="dil"'}>
+      ${topbar('Dilemas')}
+      <div class="progress" aria-hidden="true"><i style="width:${Math.min(d.i + (done ? 0 : 1), d.order.length) / d.order.length * 100}%;background:linear-gradient(90deg,var(--lilac),var(--teal))"></i></div>
+      <div class="dil-stage">${body}</div>
+    </main>`;
+  },
+
+  peaje() {
+    const P = S.peaje;
+    const cur = P.turn, p = P.pos[cur];
+    const portrait = matchMedia('(orientation: portrait)').matches;
+    const right = `<button class="tb-btn ${S.peajeConfirm ? 'warn' : ''}" data-act="peaje-reset">${S.peajeConfirm ? '¿Seguro? Toca otra vez' : 'Nueva partida'}</button>`;
+    const labels = ['1', '2', 'Checkpoint', '4', '5 · Palo'];
+    const showHere = ['bet', 'ok'].includes(P.phase);
+    const board = P.board.map((c, i) => {
+      const toks = [0, 1].filter(k => P.pos[k] === i).map(k => `<span class="tok p${k} ${k !== cur ? 'dim' : ''}" title="${N(k)}">${initial(k)}</span>`).join('');
+      const face = i === 2 ? backHTML() : cardHTML(c);
+      return `<div class="slot ${i === 2 ? 'cp' : ''} ${showHere && i === p ? 'here' : ''}">
+        <span class="lbl">${labels[i]}</span>
+        <div class="cardbox">${face}</div>
+        <div class="tokens">${toks}</div>
+      </div>`;
+    }).join('');
+
+    let action = '';
+    const status = `<div class="status"><span class="turnpill p${cur}">Turno de ${N(cur)}</span><span class="where">Posición ${p + 1}${p === 2 ? ' · checkpoint misterioso' : p === 4 ? ' · adivina el palo' : ''}</span></div>`;
+    if (P.phase === 'bet' && P.draw.length === 0) P.phase = 'empty';
+    if (P.phase === 'bet') {
+      const prompt = p === 4 ? '¿De qué palo será la próxima carta?'
+        : p === 2 ? '¿La próxima carta será mayor o menor que la carta misteriosa?'
+        : `¿La próxima carta será mayor o menor que ${label(P.board[p])}?`;
+      const buttons = p === 4
+        ? `<div class="bets suits">${SUITS.map(s => `<button class="bet suit ${s.red ? 'red' : ''}" data-act="bet" data-v="${s.k}" aria-label="${s.n}">${s.s}<small>${s.n}</small></button>`).join('')}</div>`
+        : `<div class="bets"><button class="bet up" data-act="bet" data-v="mayor">▲ MAYOR</button><button class="bet down" data-act="bet" data-v="menor">▼ MENOR</button></div>`;
+      action = `${status}<p class="prompt">${prompt}</p>${buttons}`;
+    } else if (P.phase === 'ok') {
+      action = `${status}<p class="res ok">${resultText(P.last)}</p><p class="note">${N(cur)} acierta y sigue jugando.</p><button class="btn primary amber" data-act="peaje-continue">Siguiente apuesta</button>`;
+    } else if (P.phase === 'fail') {
+      const back = P.pos[cur] === 2 ? 'volverá al checkpoint' : 'volverá a la posición 1';
+      action = `${status}<p class="res bad">${resultText(P.last)}</p><p class="drink">¡HAS FALLADO! TE TOCA BEBER</p><p class="note">En su próximo turno, ${N(cur)} ${back}.</p><button class="btn primary amber" data-act="peaje-continue">Pasar el turno a ${N(1 - cur)}</button>`;
+    } else if (P.phase === 'won') {
+      action = `<p class="res ok">${resultText(P.last)}</p><p class="drink">¡${N(cur)} ha completado El Peaje!</p><p class="prompt">${N(1 - cur)}, te toca beber.</p><button class="btn primary amber" data-act="peaje-new">Nueva partida</button>`;
+    } else if (P.phase === 'empty') {
+      action = `<p class="drink">Se ha agotado el mazo</p><p class="note">No quedan cartas para robar. Empezad una partida nueva para seguir jugando.</p><button class="btn primary amber" data-act="peaje-new">Nueva partida</button>`;
+    }
+
+    const showDrawn = ['ok', 'fail', 'won'].includes(P.phase) && P.last;
+    const drawn = showDrawn ? cardHTML(P.last.card, 'drawn') : `<div class="pcard back deck"><span class="q">${P.draw.length}</span></div>`;
+    const hints = P.hints.length
+      ? `<ul>${P.hints.slice().reverse().map(h => `<li>${cardHTML(h.card, 'mini')}<span>era</span><span class="tag ${h.rel}">${h.rel.toUpperCase()}</span><span class="by">${N(h.by)}</span></li>`).join('')}</ul>`
+      : '<p class="note">Aún no hay pistas. Aparecerán cada vez que alguien apueste en el checkpoint.</p>';
+
+    return `<main class="screen peaje-screen">
+      ${topbar('El Peaje', right)}
+      ${portrait && !S.rotateDismissed ? '<div class="rotate" role="note"><span>El Peaje está pensado en horizontal: gira el móvil.</span><button data-act="rotate-ok" aria-label="Cerrar aviso">Vale</button></div>' : ''}
+      <section class="board" aria-label="Tablero">${board}</section>
+      <section class="ptable">
+        <div class="pbox" aria-live="polite">${action}</div>
+        <div class="drawcol"><span class="note">${showDrawn ? 'Carta robada' : 'Mazo'}</span>${drawn}<span class="note">${P.draw.length} en el mazo</span></div>
+        <div class="pbox hints"><h4>Pistas de la carta misteriosa</h4>${hints}</div>
+      </section>
+    </main>`;
+  },
+};
+
+/* ---------- ¿Cuánto sabes de mí? ---------- */
+function csmStart() {
+  if (!S.csmSel.length) { S.csmWarn = true; render(); return; }
+  const pool = shuffle(CATS.filter(c => S.csmSel.includes(c.id)).flatMap(c => c.q.map(t => ({ c: c.id, t }))));
+  S.csmGame = { cats: S.csmSel.slice(), pool, i: 0, turn: 0 };
+  go('csmGame');
+}
+
+/* ---------- Peaje ---------- */
+function cardHTML(c, extra = '') {
+  const s = SUIT[c.s];
+  if (extra === 'mini') return `<span class="pcard mini ${s.red ? 'red' : ''}" aria-label="${label(c)}"><span class="cs">${RANK(c.v)}<span>${s.s}</span></span></span>`;
+  return `<div class="pcard ${s.red ? 'red' : ''} ${extra}" aria-label="${label(c)}"><span class="cr">${RANK(c.v)}<small>${s.s}</small></span><span class="cs">${s.s}</span></div>`;
+}
+const backHTML = () => '<div class="pcard back" aria-label="Carta misteriosa boca abajo"><span class="q">?</span></div>';
+const label = c => `${RANK(c.v)}${SUIT[c.s].s}`;
+
+function newPeaje() {
+  const deck = shuffle(SUITS.flatMap(s => Array.from({ length: 13 }, (_, i) => ({ v: i + 2, s: s.k }))));
+  const board = deck.splice(0, 5);
+  const mystery = board[2];
+  // Cards sharing the mystery card's value are left out of the draw pile, so a
+  // checkpoint bet can never tie and never give away the hidden value.
+  const draw = deck.filter(c => c.v !== mystery.v);
+  S.peaje = { board, draw, pos: [0, 0], turn: 0, phase: 'bet', last: null, hints: [] };
+}
+
+function resultText(L) {
+  if (L.p === 4) return `${L.ok ? '¡CORRECTO!' : '¡FALLASTE!'} Ha salido ${label(L.card)}: era de ${SUIT[L.card.s].n}.`;
+  if (L.p === 2) return `${L.ok ? '¡CORRECTO!' : '¡FALLASTE!'} La carta era ${L.rel}.`;
+  if (L.tie) return `¡FALLASTE! ${label(L.card)} tiene el mismo valor que ${label(L.target)}.`;
+  return `${L.ok ? '¡CORRECTO!' : '¡FALLASTE!'} ${label(L.card)} es ${L.rel} que ${label(L.target)}.`;
+}
+
+function peajeBet(choice) {
+  const P = S.peaje;
+  if (P.phase !== 'bet' || !P.draw.length) return;
+  const cur = P.turn, p = P.pos[cur];
+  const card = P.draw.pop();
+  let ok, rel = null, tie = false, target = null;
+  if (p === 4) {
+    ok = card.s === choice;
+  } else {
+    target = P.board[p];
+    tie = card.v === target.v;
+    rel = card.v > target.v ? 'mayor' : 'menor';
+    ok = !tie && rel === choice;
+    if (p === 2) { target = null; P.hints.push({ card, rel, by: cur }); }
+  }
+  P.last = { p, choice, card, ok, rel, tie, target };
+  if (ok) {
+    if (p === 4) P.phase = 'won';
+    else { P.pos[cur] = p + 1; P.phase = 'ok'; }
+  } else {
+    // Failing before or at the checkpoint sends the player back to 1;
+    // failing at 4 or 5 (only reachable after passing it) resumes at the checkpoint.
+    P.pos[cur] = p >= 3 ? 2 : 0;
+    P.phase = 'fail';
+  }
+  render();
+}
+
+function peajeContinue() {
+  const P = S.peaje;
+  if (P.phase === 'fail') P.turn = 1 - P.turn;
+  if (P.phase === 'ok' || P.phase === 'fail') P.phase = 'bet';
+  render();
+}
+
+/* ---------- events ---------- */
+app.addEventListener('submit', e => {
+  e.preventDefault();
+  const a = document.getElementById('p1').value.trim(), b = document.getElementById('p2').value.trim();
+  if (!a || !b) { document.getElementById('names-err').hidden = false; return; }
+  S.names = [a, b];
+  saveNames();
+  if (musicPref) Music.start();
+  go('home');
+});
+
+app.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) {
+    if (e.target.closest('[data-tap="dil"]')) { S.dil.i++; render(); }
+    return;
+  }
+  const act = el.dataset.act;
+  if (act !== 'peaje-reset') S.peajeConfirm = false;
+  switch (act) {
+    case 'home': go('home'); break;
+    case 'rename': go('setup'); break;
+    case 'open': {
+      const g = el.dataset.game;
+      if (g === 'csm') go(S.csmGame && S.csmGame.i < S.csmGame.pool.length ? 'csmGame' : 'csmSetup');
+      if (g === 'dil') { if (!S.dil) S.dil = { order: shuffle(DILEMAS.map((_, i) => i)), i: 0 }; go('dil'); }
+      if (g === 'peaje') { if (!S.peaje) newPeaje(); go('peaje'); }
+      break;
+    }
+    case 'mode': S.csmSel = MODES.find(m => m.id === el.dataset.mode).cats.slice(); S.csmWarn = false; render(); break;
+    case 'all': S.csmSel = CATS.map(c => c.id); S.csmWarn = false; render(); break;
+    case 'none': S.csmSel = []; render(); break;
+    case 'cat': {
+      const id = el.dataset.cat;
+      S.csmSel = S.csmSel.includes(id) ? S.csmSel.filter(x => x !== id) : CATS.map(c => c.id).filter(x => x === id || S.csmSel.includes(x));
+      S.csmWarn = false;
+      render();
+      break;
+    }
+    case 'csm-start': csmStart(); break;
+    case 'csm-resume': go('csmGame'); break;
+    case 'csm-config': S.csmSel = S.csmGame ? S.csmGame.cats.slice() : S.csmSel; go('csmSetup'); break;
+    case 'csm-next': S.csmGame.i++; S.csmGame.turn = 1 - S.csmGame.turn; render(); break;
+    case 'csm-again': S.csmSel = S.csmGame.cats.slice(); csmStart(); break;
+    case 'dil-restart': S.dil = { order: shuffle(DILEMAS.map((_, i) => i)), i: 0 }; render(); break;
+    case 'bet': peajeBet(el.dataset.v); break;
+    case 'peaje-continue': peajeContinue(); break;
+    case 'peaje-new': newPeaje(); render(); break;
+    case 'peaje-reset':
+      if (S.peajeConfirm) { S.peajeConfirm = false; newPeaje(); } else S.peajeConfirm = true;
+      render();
+      break;
+    case 'music': setMusic(!Music.on); syncMusicBtns(); break;
+    case 'rotate-ok': S.rotateDismissed = true; render(); break;
+  }
+});
+
+window.addEventListener('popstate', () => {
+  if (!inGame) return;
+  inGame = false;
+  S.view = 'home'; S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0);
+});
+matchMedia('(orientation: portrait)').addEventListener?.('change', () => { if (S.view === 'peaje') render(); });
+
+/* ---------- boot ---------- */
+function start(data) {
+  if (data && data.S) S = Object.assign(S, data.S);
+  else {
+    S.names = loadNames();
+    S.view = S.names ? 'home' : 'setup';
+  }
+  if (!S.names) S.view = 'setup';
+  render();
+}
+start({});
+</script>
+</body>
+</html>

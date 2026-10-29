@@ -1,0 +1,8 @@
+{
+  "appId": "com.junimosunidos.planparados",
+  "appName": "Plan para dos",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#130a1e"
+  }
+}
