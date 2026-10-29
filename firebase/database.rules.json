@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid || data.child('guest').val() === auth.uid)",
+        ".validate": "$code.matches(/^[A-Z0-9]{4}$/)",
+        "guest": {
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid) && newData.val() === auth.uid"
+        },
+        "drawings": {
+          "$key": {
+            "$role": {
+              ".validate": "newData.isString() && newData.val().length < 400000"
+            }
+          }
+        }
+      }
+    }
+  }
+}

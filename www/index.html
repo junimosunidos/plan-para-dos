@@ -147,6 +147,7 @@ p { margin: 0; }
 }
 .game:nth-child(2) { animation-delay: .07s; }
 .game:nth-child(3) { animation-delay: .14s; }
+.game:nth-child(4) { animation-delay: .21s; }
 .game:active { transform: scale(.98); }
 .game::before { content: ""; position: absolute; inset: 0; background: radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--acc) 24%, transparent), transparent 70%); pointer-events: none; }
 .game.dil { --acc: var(--lilac); }
@@ -356,6 +357,59 @@ p { margin: 0; }
   .btn { min-height: 44px; }
   .hints ul { max-height: 120px; }
 }
+/* Pintamonas */
+.game.pm { --acc: var(--teal); }
+.art-pm i { position: absolute; width: 46px; height: 58px; border-radius: 8px; background: var(--paper); box-shadow: 0 4px 10px rgba(0, 0, 0, .4); }
+.art-pm i.a { transform: translateX(-14px) rotate(-10deg); }
+.art-pm i.b { transform: translateX(14px) rotate(8deg); }
+.art-pm i::after { content: ""; position: absolute; inset: 14px 10px; border: 4px solid var(--teal); border-radius: 50% 40% 55% 45%; }
+.art-pm i.a::after { border-color: var(--rose); }
+.btn[disabled] { opacity: .6; cursor: default; }
+.btn.pm-btn { background: linear-gradient(135deg, var(--teal), #3aa8ff); color: #052326; box-shadow: 0 10px 30px -10px rgba(85, 220, 203, .7); }
+.pm-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+.pm-qr { background: #fff; padding: 10px; border-radius: 20px; width: min(68vw, 260px); }
+.pm-qr svg { display: block; width: 100%; height: auto; }
+.pm-code-label { color: var(--muted); font-size: 14px; }
+.pm-code { font-family: var(--display); font-size: 46px; letter-spacing: .14em; color: var(--teal); }
+.pm-score { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+.pm-p { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-p b { font-family: var(--display); font-weight: 400; font-size: 22px; }
+.pm-p.host b { color: var(--rose); }
+.pm-p.guest b { color: var(--teal); }
+.pm-round { color: var(--muted); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.pm-char { font-size: clamp(38px, 12vw, 60px); line-height: 1.05; overflow-wrap: anywhere; text-shadow: 0 0 18px rgba(85, 220, 203, .55); }
+.pm-draw { gap: 10px; padding-block: 10px 14px; }
+.pm-drawhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pm-what { font-weight: 800; font-size: 18px; min-width: 0; overflow-wrap: anywhere; }
+.pm-timer { font-family: var(--display); font-size: 34px; color: var(--teal); font-variant-numeric: tabular-nums; min-width: 2.2ch; text-align: right; }
+.pm-timer.hurry { color: var(--bad); animation: pulse .6s infinite; }
+.pm-canvas-box { width: 100%; max-width: 58vh; margin: 0 auto; aspect-ratio: 1; }
+.pm-canvas { width: 100%; height: 100%; display: block; border-radius: 18px; touch-action: none; box-shadow: 0 16px 40px -18px rgba(85, 220, 203, .6); }
+.pm-tools { display: flex; flex-direction: column; gap: 8px; }
+.pm-colors { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.pm-color { aspect-ratio: 1; max-height: 40px; border-radius: 50%; background: var(--c); border: 3px solid var(--night); }
+.pm-color.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--teal); }
+.pm-row { display: flex; gap: 6px; }
+.pm-tool { flex: 1; min-height: 42px; padding: 0 6px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.pm-tool i { display: block; border-radius: 50%; background: var(--ink); }
+.pm-tool.on { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 20%, var(--surface)); }
+.pm-q { text-align: center; }
+.pm-pics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pm-pics.small { width: 100%; max-width: 340px; margin: 0 auto; }
+.pm-pic { margin: 0; display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 16px; background: var(--surface); border: 2px solid transparent; min-width: 0; }
+.pm-pic.on { border-color: var(--teal); }
+.pm-pic img, .pm-wait { display: block; width: 100%; aspect-ratio: 1; border-radius: 12px; background: var(--paper); }
+.pm-wait { display: grid; place-items: center; background: var(--night-2); color: var(--muted); font-size: 13px; font-weight: 700; }
+.pm-pic figcaption { text-align: center; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-wheel-wrap { position: relative; width: 190px; height: 190px; margin: 8px auto 0; }
+.pm-pointer { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--amber); font-size: 26px; text-shadow: 0 2px 4px rgba(0, 0, 0, .6); }
+.pm-wheel { position: relative; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(var(--rose) 0deg 180deg, var(--teal) 180deg 360deg); border: 4px solid var(--paper); transition: transform 4s cubic-bezier(.15, .85, .25, 1); }
+.pm-wl { position: absolute; top: 50%; transform: translateY(-50%); max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 900; font-size: 15px; color: #1b0d24; }
+.pm-wl.host { right: 8%; }
+.pm-wl.guest { left: 8%; }
+.pm-final { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 800; }
+.pm-final b { font-family: var(--display); font-weight: 400; font-size: 44px; }
+.pm-final .amp { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -568,6 +622,7 @@ function go(view) {
 function render() {
   app.innerHTML = VIEWS[S.view]();
   if (S.view !== lastView) { app.firstElementChild?.classList.add('enter'); lastView = S.view; }
+  if (S.view === 'pm') PM.afterRender();
 }
 
 const topbar = (title, right = '') =>
@@ -629,6 +684,15 @@ const VIEWS = {
             <span class="play">${peajeLive ? 'Continuar' : 'Jugar'} →</span>
           </div>
           <div class="art art-peaje" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </button>
+        <button class="game pm" data-act="open" data-game="pm">
+          <div class="game-body">
+            <h3>Pintamonas</h3>
+            <p>Os sale el mismo personaje y lo dibujáis a la vez, cada uno en su móvil. Votáis el mejor y el que pierde bebe.</p>
+            <div class="meta"><span class="pill">Dos móviles</span><span class="pill">Necesita internet</span>${PM.live ? '<span class="pill live">Partida en curso</span>' : ''}</div>
+            <span class="play">${PM.live ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-pm" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
         </button>
       </section>
       <footer class="home-foot"><span>Bebed con responsabilidad.</span><button class="linkbtn" data-act="rename">Cambiar nombres</button></footer>
@@ -723,6 +787,8 @@ const VIEWS = {
       <div class="dil-stage">${body}</div>
     </main>`;
   },
+
+  pm() { return PM.view(); },
 
   peaje() {
     const P = S.peaje;
@@ -871,13 +937,14 @@ app.addEventListener('click', e => {
   const act = el.dataset.act;
   if (act !== 'peaje-reset') S.peajeConfirm = false;
   switch (act) {
-    case 'home': go('home'); break;
+    case 'home': go(S.names ? 'home' : 'setup'); break;
     case 'rename': go('setup'); break;
     case 'open': {
       const g = el.dataset.game;
       if (g === 'csm') go(S.csmGame && S.csmGame.i < S.csmGame.pool.length ? 'csmGame' : 'csmSetup');
       if (g === 'dil') { if (!S.dil) S.dil = { order: shuffle(DILEMAS.map((_, i) => i)), i: 0 }; go('dil'); }
       if (g === 'peaje') { if (!S.peaje) newPeaje(); go('peaje'); }
+      if (g === 'pm') PM.open();
       break;
     }
     case 'mode': S.csmSel = MODES.find(m => m.id === el.dataset.mode).cats.slice(); S.csmWarn = false; render(); break;
@@ -905,6 +972,7 @@ app.addEventListener('click', e => {
       break;
     case 'music': setMusic(!Music.on); syncMusicBtns(); break;
     case 'rotate-ok': S.rotateDismissed = true; render(); break;
+    default: PM.handle(act, el);
   }
 });
 
@@ -916,16 +984,17 @@ window.addEventListener('popstate', () => {
 matchMedia('(orientation: portrait)').addEventListener?.('change', () => { if (S.view === 'peaje') render(); });
 
 /* ---------- boot ---------- */
-function start(data) {
-  if (data && data.S) S = Object.assign(S, data.S);
-  else {
-    S.names = loadNames();
-    S.view = S.names ? 'home' : 'setup';
-  }
-  if (!S.names) S.view = 'setup';
+function start() {
+  S.names = loadNames();
+  S.view = S.names ? 'home' : 'setup';
   render();
+  // Quien escanea el QR de Pintamonas entra directamente en la partida, sin pedir nombres
+  const sala = new URLSearchParams(location.search).get('sala');
+  if (sala) PM.joinRoom(sala);
 }
-start({});
+window.addEventListener('DOMContentLoaded', start);
 </script>
+<script src="vendor/qrcode.js"></script>
+<script src="pintamonas.js"></script>
 </body>
 </html>
