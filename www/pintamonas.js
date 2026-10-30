@@ -420,7 +420,7 @@ const PM = (() => {
           <p class="eyebrow">Resultado final</p>
           <p class="pm-final"><span>${nameOf('host')} <b>${s.scores.host || 0}</b></span><span class="amp">–</span><span><b>${s.scores.guest || 0}</b> ${nameOf('guest')}</span></p>
           ${F.tie ? '<p class="res">¡Empate! La ruleta decide quién bebe.</p>' + wheel(key, F.spin) : ''}
-          ${showText ? `<p class="drink">¡${nameOf(F.winner)} gana Pintamonas!</p><p class="prompt">${nameOf(F.loser)}, te toca beber.</p>` : ''}
+          ${showText ? `<p class="drink">¡${nameOf(F.loser)} es un/a pintamonas!</p><p class="prompt">${nameOf(F.winner)} gana la partida. ${nameOf(F.loser)}, te toca beber.</p>` : ''}
         </div>
         ${showText ? `<div class="stack"><button class="btn primary big pm-btn" data-act="pm-rematch">Revancha</button><button class="btn ghost" data-act="pm-finish">Terminar</button></div>` : ''}
       </main>`;
