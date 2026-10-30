@@ -11,7 +11,7 @@ const PM = (() => {
   };
   const WEB_URL = 'https://junimosunidos.github.io/plan-para-dos/';
   // Súbelo cuando cambie cómo se guarda la partida: los móviles con otra versión no podrán unirse
-  const PROTOCOL = 2;
+  const PROTOCOL = 3;
   const CHARACTERS = [
     'Mickey Mouse', 'Minnie Mouse', 'Pato Donald', 'Goofy', 'Bugs Bunny', 'Pato Lucas', 'Piolín', 'Silvestre', 'Correcaminos', 'Coyote',
     'Pantera Rosa', 'Scooby-Doo', 'Pedro Picapiedra', 'Popeye', 'Pájaro Loco', 'Tom', 'Jerry', 'Garfield', 'Snoopy', 'Pitufo',
@@ -215,7 +215,7 @@ const PM = (() => {
         if (x.votes.host === x.votes.guest) { winner = x.votes.host; method = 'votes'; }
         else {
           const loser = Math.random() < .5 ? 'host' : 'guest';
-          winner = other(loser); method = 'roulette'; spin = spinTo(loser);
+          winner = other(loser); method = 'roulette'; spin = spinTo(winner);
         }
         x.scores[winner] = (x.scores[winner] || 0) + 1;
         x.result = { winner, loser: other(winner), method, spin };
@@ -230,7 +230,7 @@ const PM = (() => {
       if (x.phase !== 'result' || x.round !== r) return x;
       if (x.round >= P.room.settings.rounds) {
         const h = x.scores.host || 0, g = x.scores.guest || 0;
-        if (h === g) { const loser = Math.random() < .5 ? 'host' : 'guest'; x.final = { winner: other(loser), loser, tie: true, spin: spinTo(loser) }; }
+        if (h === g) { const loser = Math.random() < .5 ? 'host' : 'guest'; x.final = { winner: other(loser), loser, tie: true, spin: spinTo(other(loser)) }; }
         else x.final = { winner: h > g ? 'host' : 'guest', loser: h > g ? 'guest' : 'host', tie: false };
         x.phase = 'final';
       } else {
@@ -260,8 +260,9 @@ const PM = (() => {
   function finish() { leave(); go('pm'); }
 
   // Ruleta: la mitad del anfitrión va de 0° a 180° y la del invitado de 180° a 360°, con el puntero arriba
-  function spinTo(loser) {
-    const a = (loser === 'host' ? 25 : 205) + Math.random() * 130;
+  // El puntero señala a quien gana el punto
+  function spinTo(role) {
+    const a = (role === 'host' ? 25 : 205) + Math.random() * 130;
     return 360 * 6 + (360 - a);
   }
 
@@ -404,7 +405,7 @@ const PM = (() => {
       const showText = R.method === 'votes' || P.spun[key];
       const text = R.method === 'votes'
         ? `<p class="res ok">Los dos votáis el dibujo de ${nameOf(R.winner)}.</p><p class="drink">¡${nameOf(R.loser)} bebe!</p>`
-        : `<p class="res">No coincidís: decide la ruleta.</p>${showText ? `<p class="drink">¡${nameOf(R.loser)} bebe!</p><p class="note">${nameOf(R.winner)} se lleva el punto.</p>` : ''}`;
+        : `<p class="res">No coincidís: decide la ruleta.</p>${showText ? `<p class="res ok">¡${nameOf(R.winner)} se lleva el punto!</p><p class="drink">¡${nameOf(R.loser)} bebe!</p>` : ''}`;
       const last = s.round >= P.room.settings.rounds;
       return `<main class="screen">${head}${scoreBar(s)}
         <div class="pm-pics small">${pics}</div>
@@ -419,7 +420,7 @@ const PM = (() => {
         <div class="pm-center">
           <p class="eyebrow">Resultado final</p>
           <p class="pm-final"><span>${nameOf('host')} <b>${s.scores.host || 0}</b></span><span class="amp">–</span><span><b>${s.scores.guest || 0}</b> ${nameOf('guest')}</span></p>
-          ${F.tie ? '<p class="res">¡Empate! La ruleta decide quién bebe.</p>' + wheel(key, F.spin) : ''}
+          ${F.tie ? '<p class="res">¡Empate! La ruleta decide quién gana.</p>' + wheel(key, F.spin) : ''}
           ${showText ? `<p class="drink">¡${nameOf(F.winner)} es un/a pintamonas!</p><p class="prompt">${nameOf(F.loser)}, te toca beber.</p>` : ''}
         </div>
         ${showText ? `<div class="stack"><button class="btn primary big pm-btn" data-act="pm-rematch">Revancha</button><button class="btn ghost" data-act="pm-finish">Terminar</button></div>` : ''}
