@@ -10,6 +10,7 @@ const QS = (() => {
     rounds: 3, round: 1, turn: 0,
     word: '', times: [], scores: [0, 0],
     startAt: 0, elapsed: 0, gaveUp: false, confirm: false, count: 3,
+    flip: false, // girar 180° si el móvil se sujeta al revés en la frente
   };
   let tick = null, countdown = null, wake = null, peaks = [];
 
@@ -127,11 +128,15 @@ const QS = (() => {
           <p class="qs-big">Ponte el móvil en la frente</p></div></main>`;
       case 'play': {
         const k = Math.max(7, Math.min(18, 150 / Math.max(5, P.word.length)));
+        // En vertical, todo se gira 90° para leerse con el móvil en horizontal sobre la frente
         return `<main class="screen qs-full qs-play" data-tap="qs">
-          <div class="qs-clock" id="qs-clock">0:00,0</div>
-          <div class="qs-center"><p class="qs-word" style="font-size:min(${k}vw, 26vh)">${esc(P.word)}</p></div>
-          <div class="qs-foot"><span class="note">Agita el móvil o toca la pantalla al adivinarlo</span>
-            <button class="tb-btn ${P.confirm ? 'warn' : ''}" data-act="qs-giveup">${P.confirm ? '¿Seguro? Toca otra vez' : 'Se rinde'}</button></div>
+          <div class="qs-rot ${P.flip ? 'flip' : ''}" style="--k:${k}">
+            <div class="qs-clock" id="qs-clock">${clock(performance.now() - P.startAt)}</div>
+            <div class="qs-center"><p class="qs-word">${esc(P.word)}</p></div>
+            <div class="qs-foot"><span class="note">Agita el móvil o toca la pantalla al adivinarlo</span>
+              <span class="qs-btns"><button class="tb-btn" data-act="qs-flip">↻ Girar</button>
+              <button class="tb-btn ${P.confirm ? 'warn' : ''}" data-act="qs-giveup">${P.confirm ? '¿Seguro? Toca otra vez' : 'Se rinde'}</button></span></div>
+          </div>
         </main>`;
       }
       case 'turn': {
@@ -200,6 +205,7 @@ const QS = (() => {
         case 'qs-start': case 'qs-again':
           Object.assign(P, { round: 1, turn: 0, scores: [0, 0], times: [], word: '', phase: 'write' }); render(); return true;
         case 'qs-go': startCountdown(); return true;
+        case 'qs-flip': P.flip = !P.flip; render(); return true;
         case 'qs-giveup': if (P.confirm) stop(true); else { P.confirm = true; render(); } return true;
         case 'qs-next':
           if (P.turn === 0) { P.turn = 1; P.word = ''; P.phase = 'write'; }
