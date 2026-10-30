@@ -1,6 +1,6 @@
 # Plan para dos
 
-Juegos para beber en pareja: **¿Cuánto sabes de mí?**, **Dilemas**, **Peaje** y **Pintamonas**.
+Juegos para beber en pareja: **¿Cuánto sabes de mí?**, **Dilemas**, **Peaje**, **Pintamonas**, **Yo nunca haría** y **¿Quién soy?**.
 
 - **APK para Android:** [descargar la última versión](https://github.com/junimosunidos/plan-para-dos/releases/latest/download/plan-para-dos.apk)
 - **Versión web:** https://junimosunidos.github.io/plan-para-dos/
@@ -9,6 +9,8 @@ Juegos para beber en pareja: **¿Cuánto sabes de mí?**, **Dilemas**, **Peaje**
 
 - `www/` — la app (HTML, fuentes, iconos). Es lo que se publica en la web y lo que va dentro del APK.
 - `www/pintamonas.js` — el juego de dibujar en dos móviles. Se conecta con Firebase Realtime Database (login anónimo).
+- `www/yonunca.js` — Yo nunca haría (frases del documento, con interruptor +18).
+- `www/quiensoy.js` — ¿Quién soy? (móvil en la frente; el cronómetro se para al agitarlo).
 - `firebase/database.rules.json` — reglas de seguridad de la base de datos; se pegan en la consola de Firebase.
 - `android/` — proyecto Android generado con Capacitor.
 - `.github/workflows/apk.yml` — en cada cambio en `main` compila el APK y lo publica en *Releases*.

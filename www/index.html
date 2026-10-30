@@ -26,6 +26,7 @@
   --teal: #55dccb;
   --lilac: #b590ff;
   --hot: #ff4b3e;
+  --sky: #6cc6ff;
   --ok: #5fe39a;
   --bad: #ff5d6e;
   --paper: #fbf6ee;
@@ -148,6 +149,8 @@ p { margin: 0; }
 .game:nth-child(2) { animation-delay: .07s; }
 .game:nth-child(3) { animation-delay: .14s; }
 .game:nth-child(4) { animation-delay: .21s; }
+.game:nth-child(5) { animation-delay: .28s; }
+.game:nth-child(6) { animation-delay: .35s; }
 .game:active { transform: scale(.98); }
 .game::before { content: ""; position: absolute; inset: 0; background: radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--acc) 24%, transparent), transparent 70%); pointer-events: none; }
 .game.dil { --acc: var(--lilac); }
@@ -410,6 +413,34 @@ p { margin: 0; }
 .pm-final { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 800; }
 .pm-final b { font-family: var(--display); font-weight: 400; font-size: 44px; }
 .pm-final .amp { color: var(--muted); }
+/* Yo nunca haría */
+.game.yn { --acc: var(--hot); }
+.art-yn span { display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--hot); font-family: var(--display); font-size: 16px; line-height: 1; text-align: center; color: var(--ink); box-shadow: 0 0 18px -2px var(--hot); transform: rotate(-12deg); }
+.btn.yn-btn { background: linear-gradient(135deg, var(--hot), var(--amber)); color: #2b0d06; box-shadow: 0 10px 30px -10px rgba(255, 75, 62, .7); }
+.yn-intro { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+.yn-title { font-size: clamp(40px, 12vw, 60px); line-height: 1.05; text-shadow: 0 0 18px rgba(255, 75, 62, .6); }
+.yn-rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; color: var(--muted); font-size: 16px; line-height: 1.45; }
+.yn-rules b { color: var(--ink); }
+.yn-card { background: linear-gradient(165deg, color-mix(in srgb, var(--hot) 24%, var(--surface-2)), var(--surface) 75%); border-color: color-mix(in srgb, var(--hot) 55%, transparent); box-shadow: 0 30px 70px -30px rgba(255, 75, 62, .7); }
+.yn-card .num { color: var(--amber); }
+
+/* ¿Quién soy? */
+.game.qs { --acc: var(--sky); }
+.art-qs span { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 12px; background: #ffe66d; color: #3a2a00; font-family: var(--display); font-size: 40px; transform: rotate(8deg); box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
+.btn.qs-btn { background: linear-gradient(135deg, var(--sky), var(--lilac)); color: #07182b; box-shadow: 0 10px 30px -10px rgba(108, 198, 255, .7); }
+.qs-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; min-width: 0; }
+.qs-big { font-size: 22px; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+.qs-form { width: 100%; text-align: left; }
+.qs-full { justify-content: center; }
+.qs-count { font-family: var(--display); font-size: 120px; line-height: 1; color: var(--sky); text-shadow: 0 0 30px rgba(108, 198, 255, .7); animation: pop 1s infinite; }
+.qs-play { user-select: none; gap: 8px; }
+.qs-clock { text-align: center; font-family: var(--display); font-size: clamp(28px, 7vh, 44px); color: var(--sky); font-variant-numeric: tabular-nums; }
+.qs-word { font-weight: 900; line-height: 1.05; overflow-wrap: anywhere; text-wrap: balance; color: var(--ink); }
+.qs-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.qs-time { font-family: var(--display); font-size: 48px; color: var(--sky); }
+.qs-times { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; }
+.qs-times li { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); font-weight: 700; }
+.qs-times b { font-variant-numeric: tabular-nums; color: var(--sky); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -590,6 +621,9 @@ function syncMusicBtns() {
   });
 }
 
+/* Juegos en archivos aparte (Pintamonas, Yo nunca haría, ¿Quién soy?): cada uno se registra aquí con view, handle y, si los necesita, afterRender y leave */
+const GAMES = {};
+
 /* ---------- state ---------- */
 let S = {
   view: 'setup',
@@ -630,13 +664,13 @@ function goBack() {
   return false;
 }
 function go(view) {
-  if (S.view === 'pm' && view !== 'pm') PM.leave();
+  if (S.view !== view && GAMES[S.view] && GAMES[S.view].leave) GAMES[S.view].leave();
   S.view = view;
   syncTrap(); S.csmWarn = false; S.peajeConfirm = false; render(); window.scrollTo(0, 0); }
 function render() {
-  app.innerHTML = VIEWS[S.view]();
+  app.innerHTML = (VIEWS[S.view] || GAMES[S.view].view)();
   if (S.view !== lastView) { app.firstElementChild?.classList.add('enter'); lastView = S.view; }
-  if (S.view === 'pm') PM.afterRender();
+  if (GAMES[S.view] && GAMES[S.view].afterRender) GAMES[S.view].afterRender();
 }
 
 const topbar = (title, right = '') =>
@@ -707,6 +741,24 @@ const VIEWS = {
             <span class="play">Jugar →</span>
           </div>
           <div class="art art-pm" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
+        </button>
+        <button class="game yn" data-act="open" data-game="yn">
+          <div class="game-body">
+            <h3>Yo nunca haría</h3>
+            <p>Una frase cada vez. Si tú sí lo harías, bebes un trago.</p>
+            <div class="meta"><span class="pill">${YN.total} frases</span><span class="pill">Con o sin +18</span>${YN.live ? `<span class="pill live">Vais por la ${YN.live}</span>` : ''}</div>
+            <span class="play">${YN.live ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-yn" aria-hidden="true"><span>Yo<br>nunca</span></div>
+        </button>
+        <button class="game qs" data-act="open" data-game="qs">
+          <div class="game-body">
+            <h3>¿Quién soy?</h3>
+            <p>Uno escribe un nombre y el otro se pone el móvil en la frente. Agítalo cuando lo adivines: quien tarde más, bebe.</p>
+            <div class="meta"><span class="pill">Un móvil</span><span class="pill">Agitar para parar</span>${QS.live ? '<span class="pill live">Partida en curso</span>' : ''}</div>
+            <span class="play">${QS.live ? 'Continuar' : 'Jugar'} →</span>
+          </div>
+          <div class="art art-qs" aria-hidden="true"><span>?</span></div>
         </button>
       </section>
       <footer class="home-foot"><span>Bebed con responsabilidad. · Versión __VERSION__</span><button class="linkbtn" data-act="rename">Cambiar nombres</button></footer>
@@ -801,8 +853,6 @@ const VIEWS = {
       <div class="dil-stage">${body}</div>
     </main>`;
   },
-
-  pm() { return PM.view(); },
 
   peaje() {
     const P = S.peaje;
@@ -958,7 +1008,7 @@ app.addEventListener('click', e => {
       if (g === 'csm') go(S.csmGame && S.csmGame.i < S.csmGame.pool.length ? 'csmGame' : 'csmSetup');
       if (g === 'dil') { if (!S.dil) S.dil = { order: shuffle(DILEMAS.map((_, i) => i)), i: 0 }; go('dil'); }
       if (g === 'peaje') { if (!S.peaje) newPeaje(); go('peaje'); }
-      if (g === 'pm') PM.open();
+      if (GAMES[g]) GAMES[g].open();
       break;
     }
     case 'mode': S.csmSel = MODES.find(m => m.id === el.dataset.mode).cats.slice(); S.csmWarn = false; render(); break;
@@ -986,7 +1036,7 @@ app.addEventListener('click', e => {
       break;
     case 'music': setMusic(!Music.on); syncMusicBtns(); break;
     case 'rotate-ok': S.rotateDismissed = true; render(); break;
-    default: PM.handle(act, el);
+    default: Object.values(GAMES).some(g => g.handle(act, el));
   }
 });
 
@@ -1018,5 +1068,7 @@ window.addEventListener('DOMContentLoaded', start);
 </script>
 <script src="vendor/qrcode.js"></script>
 <script src="pintamonas.js?v=__VERSION__"></script>
+<script src="yonunca.js?v=__VERSION__"></script>
+<script src="quiensoy.js?v=__VERSION__"></script>
 </body>
 </html>

@@ -480,3 +480,4 @@ const PM = (() => {
     open() { leave(); go('pm'); },
   };
 })();
+GAMES.pm = PM;
